@@ -59,4 +59,49 @@ def getDocREDVertexSetFromBratAnnotations(text,annotation,sentences):
          wordIDX = 0
   return bertexSet,bratIDtoDocRED
 
-              
+def getDocREDlabels(text,annotation,vertexSet,bratsIDtoDocREDID,relInfo):
+    labels =[]
+    for line in annotation.splitlines():
+        if line[0] != "R": #Skip entity entries
+            continue
+        line = line.split('\t')[1].split()
+    
+        r = list(relInfo.key())[list(relInfo.values()),index(line[0].lower())] #Find the relationship ID use the DocReed
+        h = bratsIDtoDocREDID[line[1].split(':')[1]]
+        t = bratsIDtoDocREDID[line[2].split(':')[1]]
+        evidence = set()
+        for vertex in itertools.chain(vertexSet[h],vertexSetp[t]):
+            evidence.add(vertex['sent_id'])
+        evidence = sorted(evidence)
+        labels.append({
+            "r":r,
+            "h":h,
+            "t":t,
+            "evidence":evidence
+        })
+    return labels
+def getDocREDDocumentObject(textFilePath,annotationFilePath,relInfoFilePath):
+    with open(textFilePath,'r',encoding = 'utf-8') as textFile,open(annotatioFilePath,'r',encoding = 'utf-8') as annotationFile,open(relInfoFilePath,'r',encoding = 'utf-8')  as relInfoFile:
+    text = textFile.read()
+    annotation = annotationFile.read()
+    sentences = getSpaCySentences(text)
+    vertexSet,bratIDtoDocREDID = getDocREDVertexSetFormBratAnnotations(text,anntation,sentences)
+    labels = getDocREDlabels(text,annotation,vertexSet,bratsIDtoDocREDID,json.load(relInfoFile))
+    documentObject = {
+        "vertexSet": vertexSet,
+        "labels":labels,
+        "titile":os.path.splitext(os.path.normpath(textFilePath)))[0],
+        "sents": [[word.text for word in sentence] for sentence in sentence] #Get the text from the SpaCy
+     }
+    return documentObject
+if __name__ == "__main__": #输出anotation_data.json到Preprocessing文件，目的就是从ann文件映射到json文件中，第一步是getSpaCySentences提取txt中的每个句子到sentences中，第二步为getDocREDVertexSetFromBratAnnotations从Brat标记的ann映射到能被DocRED读取的json格式，创建vertext顶点集存储实体的一些起点终点和name的信息，第三步getDocREDlabels存储关系的信息，最后就根据映射的顶点集进行文件的输出。
+        documents = []
+        for filename in os.listdir("input/annotations"):
+            if filename[0] != '.':
+                annotationFilePath = "input/annotations/" + filename
+                textFilePath = "input/text/" + os.path.splitext(filename)[0] + ".txt"
+                print(textFilePath)
+                documents.append(getdocREDDocumentObject(textFilePath,annotationfilePath,"rel_info.json"))
+        with open("../Preprocessing/annotated_data.json",'w',encoding = 'utf-8') as file:
+            json.dump(documents,file)
+            
