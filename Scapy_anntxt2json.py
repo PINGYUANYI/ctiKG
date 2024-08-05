@@ -94,7 +94,10 @@ def getDocREDDocumentObject(textFilePath,annotationFilePath,relInfoFilePath):
         "sents": [[word.text for word in sentence] for sentence in sentence] #Get the text from the SpaCy
      }
     return documentObject
-if __name__ == "__main__": #输出anotation_data.json到Preprocessing文件，目的就是从ann文件映射到json文件中，第一步是getSpaCySentences提取txt中的每个句子到sentences中，第二步为getDocREDVertexSetFromBratAnnotations从Brat标记的ann映射到能被DocRED读取的json格式，创建vertext顶点集存储实体的一些起点终点和name的信息，第三步getDocREDlabels存储关系的信息，最后就根据映射的顶点集进行文件的输出。
+if __name__ == "__main__": 
+#输出anotation_data.json到Preprocessing文件，目的就是从ann文件映射到json文件中，第一步是getSpaCySentences提取txt中的每个句子到sentences中，
+#第二步为getDocREDVertexSetFromBratAnnotations从Brat标记的ann映射到能被DocRED读取的json格式，创建vertext顶点集存储实体的一些起点终点和name的信息，
+#第三步getDocREDlabels存储关系的信息，最后就根据映射的顶点集进行文件的输出。
         documents = []
         for filename in os.listdir("input/annotations"):
             if filename[0] != '.':
